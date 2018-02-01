@@ -202,7 +202,7 @@ class BSTree:
             if node is None:
                 print('\t' * level + "None")
             else:
-                print('\t' * level + str(node.value))
+                print('\t' * level + str(node.value) + " (" + str(node.count) + "x)")
                 self.print_level(node._left, level+1, height)
                 self.print_level(node._right, level+1, height)
 
