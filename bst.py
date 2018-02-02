@@ -203,7 +203,7 @@ class BSTree:
         new_root.right = og_root
         og_root.parent = new_root
         og_root.balance = og_root.balance + 1 + max(new_root.balance, 0)
-        new_root.balance = new_root.balance - 1 + max(0, og_root.balance)
+        new_root.balance = new_root.balance - 1 + min(0, og_root.balance)
 
     def _balance(self, current):
         """Returns the balance factor of a node (the diff between heights of left and right subtrees"""
