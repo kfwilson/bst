@@ -12,6 +12,7 @@ class TreeNode:
 
     def __init__(self, val):
         self.value = val
+        self.height = 0
         self._left = None
         self._right = None
 
@@ -47,16 +48,16 @@ class TreeNode:
     def __repr__(self):
         """ Official string rep of this node"""
         node_str = "TreeNode(" + str(self.value) + ", L: "
-        if self._left:
-            node_str += self._left.value
+        if self.left:
+            node_str += self.left.value
         else:
             node_str += "None"
         node_str += ", R: "
         if self._right:
-            node_str += self._right.value
+            node_str += self.right.value
         else:
             node_str += "None"
-        return (node_str+")")
+        return (node_str+", H: " + str(self.height)+")")
 
 # move internal recursive functions that don't depend on external data outside as functions
 class BSTree:
@@ -64,7 +65,7 @@ class BSTree:
     def __init__(self, values=()):
         """ Constructor for this bst
             Can take optional values (list, tuple, or set (all items must be same type)) to build initial tree
-            ALLOWS DUPLICATES (simple implementation that always stores duplicates to the right)
+            ALLOWS DUPLICATES (simple implementation that always stores duplicates to the left)
         """
         self._root = None
 
@@ -100,7 +101,7 @@ class BSTree:
 
     def _insert_node(self, current, new_val):
         """ Inserts a node storing the new_value into the BST"""
-        if new_val < current.value:
+        if new_val <= current.value:
             if current.left:
                 self._insert_node(current.left, new_val)
             else:
@@ -110,6 +111,7 @@ class BSTree:
                 self._insert_node(current.right, new_val)
             else:
                 current.right = TreeNode(new_val)
+        current.height = self._height_node(current)
 
     def find(self, search_val):
         """ Wrapper for findNode that initiates the search by calling findNode starting at the root """
@@ -192,10 +194,96 @@ class BSTree:
             if node is None:
                 print('\t' * level + "None")
             else:
-                print('\t' * level + str(node.value))
+                print('\t' * level + str(node.value) + "(" + str(node.height)+")")
                 self._print_level(node._left, level+1, height)
                 self._print_level(node._right, level+1, height)
 
+    def __repr__(self):
+        '''From James Collins'''
+        em_dash = '\u2014'
+        max_depth = min(5, self.root.height - 1)
+        value_width = 3  # Must be odd.
+        node_width = value_width + 2  # Add space for parentheses
+        print_width = (node_width + 1) * 2 ** (max_depth - 1) - 1
+        center = print_width // 2 + 1
+        level = [self.root]
+        blank_char = ' '
+        out = ""
+        for i in range(max_depth):
+            next_level = []
+            for n in level:
+                if n:
+                    next_level.extend([n.left, n.right])
+                else:
+                    next_level.extend([None, None])
+            end_width = center // 2 ** i - (node_width // 2 + 1)
+            end_space = blank_char * end_width
+            interstitial_width = (print_width - 2 * end_width - node_width * len(level)) // (len(level) - 1) if len(
+                level) > 1 else 0
+            interstitial_space = blank_char * interstitial_width
+            out += end_space
+            out += interstitial_space.join(
+                [f'({node.value: ^3})' if node else blank_char * node_width for node in level])
+            out += end_space + '\n'
+
+            out += end_space
+            for n in level:
+                if n:
+                    if n.left:
+                        out += blank_char * (node_width // 2 - 1) + '/' + blank_char
+                    else:
+                        out += blank_char * (node_width // 2 + 1)
+                    if n.right:
+                        out += '\\' + blank_char * (node_width // 2 - 1)
+                    else:
+                        out += blank_char * (node_width // 2)
+                else:
+                    out += blank_char * node_width
+                out += interstitial_space
+            out = out[:-interstitial_width] if interstitial_width else out
+            out += end_space + '\n'
+
+            if i == max_depth - 1:
+                break
+
+            next_end_width = center // 2 ** (i + 1) - (node_width // 2 + 1)
+            dash_end_width = next_end_width + node_width // 2 + 1
+            next_interstitial_width = (print_width - 2 * next_end_width - node_width * len(next_level)) // (
+                        len(next_level) - 1)
+            dash_width = (next_interstitial_width + 2 * (node_width // 2) - 3) // 2
+            dash_interstitial_width = interstitial_width - 2 * (dash_width - node_width // 2 + 1)
+            out += blank_char * dash_end_width
+            for n in level:
+                if n:
+                    if n.left:
+                        out += em_dash * dash_width + blank_char * 3
+                    else:
+                        out += blank_char * (3 + dash_width)
+                    if n.right:
+                        out += em_dash * dash_width
+                    else:
+                        out += blank_char * dash_width
+                    out += blank_char * dash_interstitial_width
+                else:
+                    out += blank_char * (2 * dash_width + 3 + dash_interstitial_width)
+            out = out[:-dash_interstitial_width] if interstitial_width else out
+            out += blank_char * dash_end_width + '\n'
+
+            out += blank_char * (next_end_width + node_width // 2)
+            for n in level:
+                if n:
+                    out += '/' if n.left else blank_char
+                    out += blank_char * (next_interstitial_width + 2 * (node_width // 2))
+                    out += '\\' if n.right else blank_char
+                    out += blank_char * (next_interstitial_width + 2 * (node_width // 2))
+                else:
+                    out += blank_char * 2 * (next_interstitial_width + 2 * (node_width // 2) + 1)
+            out = out[:-(next_interstitial_width + 2 * (node_width // 2))]
+            out += blank_char * (next_end_width + node_width // 2) + '\n'
+
+            level = next_level
+
+        return out[:-1]
 
 def main():
     s = input("Enter a list of numbers to build your own tree (Enter to use default list): ")
@@ -207,6 +295,7 @@ def main():
     tree = BSTree(lst)
     #tree.insert("test string")
     tree.print_tree()
+    print(tree)
     print("12 is in tree? " + str(tree.find(12)))
     print("Height: " + str(tree.height()))
     print("In-order: " + str(tree.to_list('in_order')))
