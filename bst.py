@@ -145,22 +145,22 @@ class BSTree:
             self.rebalance(current)
             return
         if current.parent:
-            if current.is_left(): # if current node is left child of parent
+            if current is current.parent.left: # if current node is left child of parent
                 current.parent.balance += 1
-            elif current.is_right(): # if current is right child
+            elif current is current.parent.right: # if current is right child
                 current.parent.balance -= 1
             if current.parent.balance != 0: # continue updating and rebalancing up tree
                 self._update_balance(current.parent)
 
     def rebalance(self, current):
         """ Rebalance a node that is unbalanced by a series of rotations"""
-        if current.balance < 0: # current node right heavy
+        if current.balance < -1: # current node right heavy
             if current.right.balance > 0: # right child left heavy
                 self.rotate_right(current.right)
                 self.rotate_left(current)
             else: # right child is left heavy or balanced
                 self.rotate_left(current)
-        elif current.balance > 0: # current node left heavy
+        elif current.balance > 1: # current node left heavy
             if current.left.balance < 0: # left child right heavy
                 self.rotate_left(current.left)
                 self.rotate_right(current)
@@ -174,7 +174,7 @@ class BSTree:
         if new_root.left:
             new_root.left.parent = og_root
         new_root.parent = og_root.parent
-        if og_root.value == self.root.value:    # if our original root of the rotation is the tree root, replace tree root with new root
+        if og_root is self.root:    # if our original root of the rotation is the tree root, replace tree root with new root
             self.root = new_root
         else:
             if og_root.is_left():
@@ -202,9 +202,8 @@ class BSTree:
                 og_root.parent.left = new_root
         new_root.right = og_root
         og_root.parent = new_root
-        # FIX BALANCES & TEST
-        #og_root.balance = new_root.balance +
-        #new_root.balance =
+        og_root.balance = og_root.balance + 1 + max(new_root.balance, 0)
+        new_root.balance = new_root.balance - 1 + max(0, og_root.balance)
 
     def _balance(self, current):
         """Returns the balance factor of a node (the diff between heights of left and right subtrees"""
