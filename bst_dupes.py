@@ -97,53 +97,53 @@ class BSTree:
         else:
             if type(self.root.value) != type(new_val):
                 raise TypeError("You can only insert objects of type " + str(type(self.root.value)) + " into this BST.")
-            self.insert_node(self.root, new_val)
+            self.insert(self.root, new_val)
 
-    def insert_node(self, current, new_val):
+    def insert(self, current, new_val):
         """ Inserts a node storing the new_value into the BST"""
         if new_val == current.value: # if duplicate, just increase the count by one
             current.count += 1
         elif new_val < current.value:
             if current.left:
-                self.insert_node(current.left, new_val)
+                self.insert(current.left, new_val)
             else:
                 current.left = TreeNode(new_val)
         else:
             if current.right:
-                self.insert_node(current.right, new_val)
+                self.insert(current.right, new_val)
             else:
                 current.right = TreeNode(new_val)
 
     def find(self, search_val):
         """ Wrapper for findNode that initiates the search by calling findNode starting at the root
             Returns true if found, false otherwise"""
-        return (self.find_node(self.root, search_val) != 0)
+        return (self.find(self.root, search_val) != 0)
 
     def getCount(self, search_val):
         """ Wrapper for findNode that initiates the search by calling findNode starting at the root
             Returns count if search_val is found, 0 otherwise
         """
-        return self.find_node(self.root, search_val)
+        return self.find(self.root, search_val)
 
-    def find_node(self, current, search_val):
+    def find(self, current, search_val):
         """ Searches the BST for the passed search_val returning the count if value found, 0 otherwise"""
         if current is None:
             return 0
         elif search_val == current.value:
             return current.count
         elif search_val <= current.value:
-            return self.find_node(current.left, search_val)
-        return self.find_node(current.right, search_val)
+            return self.find(current.left, search_val)
+        return self.find(current.right, search_val)
 
     def height(self):
         """ Wrapper for heightNode that initiates the height calculation by calling heightNode on the root """
-        return self.height_node(self.root)
+        return self.height(self.root)
 
-    def height_node(self, node):
+    def height(self, node):
         """ Calculates the height of the tree from the passed current node """
         if node is None:
             return 0;
-        return 1 + max(self.height_node(node.left), self.height_node(node.right))
+        return 1 + max(self.height(node.left), self.height(node.right))
 
     def to_list(self, order):
         """ Returns a list representation of the tree with the specified order.
