@@ -12,14 +12,13 @@ class TreeNode(Node):
         The data this node holds.
     """
 
-    def __init__(self, val, parent = None):
+    def __init__(self, val):
         if not hasattr(val, '__le__'):
-            raise AttributeError('TreeNode values must be comparable.')
+            raise AttributeError('AVLTreeNode values must be comparable.')
         super().__init__(val)
-        self.balance = 0 # difference between heights of left and right subtrees (h(left) - h(right))
+        self.height = 0
         self._left = None
         self._right = None
-        self._parent = parent
 
     @property
     def left(self):
@@ -30,11 +29,6 @@ class TreeNode(Node):
     def right(self):
         """ A reference to the right child node, if one exists """
         return self._right
-
-    @property
-    def parent(self):
-        """ A reference to the parent node, if one exists"""
-        return self._parent
 
     @left.setter
     def left(self, new_left):
@@ -51,14 +45,6 @@ class TreeNode(Node):
             self._right = new_right
         else:
             raise TypeError("The{0}.right must also be an instance of {0}".format(TreeNode))
-
-    @parent.setter
-    def parent(self, new_parent):
-        """Sets the value of this node's parent pointer"""
-        if isinstance(new_parent, TreeNode) or new_parent is None:
-            self._parent = new_parent
-        else:
-            raise TypeError("The{0}.left must also be an instance of {0}".format(TreeNode))
 
     def __str__(self):
         """ Returns the value of this node as a string """
@@ -81,7 +67,7 @@ class TreeNode(Node):
             node_str += self.right.value
         else:
             node_str += "None"
-        return (node_str+", BF: " + str(self.balance)+")")
+        return (node_str+", H: " + str(self.height)+")")
 
 # move internal recursive functions that don't depend on external data outside as functions
 class BSTree:
@@ -89,7 +75,7 @@ class BSTree:
     def __init__(self, values=()):
         """ Constructor for this bst
             Can take optional values (list, tuple, or set (all items must be same type)) to build initial tree
-            ALLOWS DUPLICATES (simple implementation that always stores duplicates to the right)
+            ALLOWS DUPLICATES (simple implementation that always stores duplicates to the left)
         """
         self._root = None
 
@@ -123,90 +109,17 @@ class BSTree:
 
     def _insert(self, current, new_val):
         """ Inserts a node storing the new_value into the BST"""
-        if new_val < current.value:
+        if new_val <= current.value:
             if current.left:
                 self._insert(current.left, new_val)
             else:
-                current.left = TreeNode(new_val, parent = current)
-                self._update_balance(current.left)
+                current.left = TreeNode(new_val)
         else:
             if current.right:
                 self._insert(current.right, new_val)
             else:
-                current.right = TreeNode(new_val, parent = current)
-                self._update_balance(current.right)
-
-    def _update_balance(self, current):
-        """ Check the balance of the current node and rebalance if necessary. call update_balance on parent recursively"""
-        if abs(current.balance) > 1: # if node is unbalanced
-            self.rebalance(current)
-            return
-        if current.parent:
-            if current is current.parent.left: # if current node is left child of parent
-                current.parent.balance += 1
-            elif current is current.parent.right: # if current is right child
-                current.parent.balance -= 1
-            if current.parent.balance != 0: # continue updating and rebalancing up tree
-                self._update_balance(current.parent)
-
-    def rebalance(self, current):
-        """ Rebalance a node that is unbalanced by a series of rotations"""
-        if current.balance < -1: # current node right heavy
-            if current.right.balance > 0: # right child left heavy
-                self.rotate_right(current.right)
-                self.rotate_left(current)
-            else: # right child is left heavy or balanced
-                self.rotate_left(current)
-        elif current.balance > 1: # current node left heavy
-            if current.left.balance < 0: # left child right heavy
-                self.rotate_left(current.left)
-                self.rotate_right(current)
-            else:
-                self.rotate_right(current)
-
-    def rotate_left(self, og_root):
-        """ Rotate the subtree with root og_root to the left so that right subtree of og_root replaces og_root"""
-        new_root = og_root.right
-        og_root.right = new_root.left
-        if new_root.left:
-            new_root.left.parent = og_root
-        new_root.parent = og_root.parent
-        if og_root is self.root:    # if our original root of the rotation is the tree root, replace tree root with new root
-            self.root = new_root
-        else:
-            if og_root is og_root.parent.left:
-                og_root.parent.left = new_root
-            else:
-                og_root.parent.right = new_root
-        new_root.left = og_root
-        og_root.parent = new_root
-        og_root.balance = new_root.balance + 1 - min(new_root.balance, 0)
-        new_root.balance = new_root.balance + 1 + max(og_root.balance, 0)
-
-    def rotate_right(self, og_root):
-        """Rotate the subtree with root og_root to the right so that left subtree of og_root replaces og_root"""
-        new_root = og_root.left
-        og_root.left = new_root.right
-        if new_root.right:
-            new_root.right.parent = og_root
-        new_root.parent = og_root.parent
-        if og_root.value == self.root.value: # og_root is tree root
-            self.root = new_root
-        else:
-            if og_root is og_root.parent.right:
-                og_root.parent.right = new_root
-            else:
-                og_root.parent.left = new_root
-        new_root.right = og_root
-        og_root.parent = new_root
-        og_root.balance = og_root.balance + 1 + max(new_root.balance, 0)
-        new_root.balance = new_root.balance - 1 + min(0, og_root.balance)
-
-    def _balance(self, current):
-        """Returns the balance factor of a node (the diff between heights of left and right subtrees"""
-        if not current:
-            return 0
-        return (self._height(current.left)-self._height(current.right))
+                current.right = TreeNode(new_val)
+        current.height = self._height(current)
 
     def find(self, search_val):
         """ Wrapper for findNode that initiates the search by calling findNode starting at the root """
@@ -289,17 +202,17 @@ class BSTree:
             if node is None:
                 print('\t' * level + "None")
             else:
-                print('\t' * level + str(node.value) + "(" + str(node.balance)+")")
+                print('\t' * level + str(node.value) + "(" + str(node.height)+")")
                 self._print_level(node._left, level+1, height)
                 self._print_level(node._right, level+1, height)
 
     def __repr__(self):
         '''From James Collins'''
         em_dash = '\u2014'
-        max_depth = min(5, self.height())  # replaced height with balance in node so changing this to tree height
+        max_depth = min(5, self.root.height)
         value_width = 3  # Must be odd.
         node_width = value_width + 2  # Add space for parentheses
-        print_width = (node_width + 1) * 2 ** (max_depth-1) - 1
+        print_width = (node_width + 1) * 2 ** (max_depth - 1) - 1
         center = print_width // 2 + 1
         level = [self.root]
         blank_char = ' '

@@ -1,4 +1,4 @@
-"""A python binary search tree implementation."""
+"""A python AVL binary search tree implementation."""
 from typing import Iterable
 
 from node import Node
@@ -8,13 +8,13 @@ class AVLTreeNode(Node):
 
     Attributes
     ----------
-    value : Any
+    val : Any
         The data this node holds.
     """
 
     def __init__(self, val, parent = None):
         if not hasattr(val, '__le__'):
-            raise AttributeError('TreeNode values must be comparable.')
+            raise AttributeError('AVLTreeNode values must be comparable.')
         super().__init__(val)
         self.balance = 0 # difference between heights of left and right subtrees (h(left) - h(right))
         self._left = None
@@ -39,26 +39,26 @@ class AVLTreeNode(Node):
     @left.setter
     def left(self, new_left):
         """ Sets the value of this node's left child pointer """
-        if isinstance(new_left, TreeNode) or new_left is None:
+        if isinstance(new_left, AVLTreeNode) or new_left is None:
             self._left = new_left
         else:
-            raise TypeError("The{0}.left must also be an instance of {0}".format(TreeNode))
+            raise TypeError("The{0}.left must also be an instance of {0}".format(AVLTreeNode))
 
     @right.setter
     def right(self, new_right):
         """ Sets the value of this node's right child pointer """
-        if isinstance(new_right, TreeNode) or new_right is None:
+        if isinstance(new_right, AVLTreeNode) or new_right is None:
             self._right = new_right
         else:
-            raise TypeError("The{0}.right must also be an instance of {0}".format(TreeNode))
+            raise TypeError("The{0}.right must also be an instance of {0}".format(AVLTreeNode))
 
     @parent.setter
     def parent(self, new_parent):
         """Sets the value of this node's parent pointer"""
-        if isinstance(new_parent, TreeNode) or new_parent is None:
+        if isinstance(new_parent, AVLTreeNode) or new_parent is None:
             self._parent = new_parent
         else:
-            raise TypeError("The{0}.left must also be an instance of {0}".format(TreeNode))
+            raise TypeError("The{0}.left must also be an instance of {0}".format(AVLTreeNode))
 
     def __str__(self):
         """ Returns the value of this node as a string """
@@ -71,7 +71,7 @@ class AVLTreeNode(Node):
 
     def __repr__(self):
         """ Official string rep of this node"""
-        node_str = "TreeNode(" + str(self.value) + ", L: "
+        node_str = "AVLTreeNode(" + str(self.value) + ", L: "
         if self.left:
             node_str += self.left.value
         else:
@@ -109,15 +109,15 @@ class AVLTree:
 
     @root.setter
     def root(self, new_node):
-        if isinstance(new_node, TreeNode) or new_node is None:
+        if isinstance(new_node, AVLTreeNode) or new_node is None:
             self._root = new_node
         else:
-            raise TypeError("The head value of a BST may only be a TreeNode or None")
+            raise TypeError("The head value of a BST may only be a AVLTreeNode or None")
 
     def insert(self, new_val):
         """ Wrapper for insertNode that initiates the insertion by calling insertNode on root"""
         if self.root is None:
-            self.root = TreeNode(new_val)
+            self.root = AVLTreeNode(new_val)
         else:
             self._insert(self.root, new_val)
 
@@ -127,13 +127,13 @@ class AVLTree:
             if current.left:
                 self._insert(current.left, new_val)
             else:
-                current.left = TreeNode(new_val, parent = current)
+                current.left = AVLTreeNode(new_val, parent = current)
                 self._update_balance(current.left)
         else:
             if current.right:
                 self._insert(current.right, new_val)
             else:
-                current.right = TreeNode(new_val, parent = current)
+                current.right = AVLTreeNode(new_val, parent = current)
                 self._update_balance(current.right)
 
     def _update_balance(self, current):
@@ -387,7 +387,7 @@ def main():
         print("Using default list: " + str(lst))
     else:
         lst = [int(x) for x in s.split()]
-    tree = BSTree(lst)
+    tree = AVLTree(lst)
     #tree.insert("test string")
     tree.print_tree()
     print(tree)
