@@ -1,7 +1,9 @@
 """A python binary search tree implementation."""
 from typing import Iterable
 
-class TreeNode:
+from node import Node
+
+class TreeNode(Node):
     """A node for use in binary search trees.
 
     Attributes
@@ -11,7 +13,9 @@ class TreeNode:
     """
 
     def __init__(self, val, parent = None):
-        self.value = val
+        if not hasattr(val, '__le__'):
+            raise AttributeError('TreeNode values must be comparable.')
+        super().__init__(val)
         self.balance = 0 # difference between heights of left and right subtrees (h(left) - h(right))
         self._left = None
         self._right = None
@@ -35,31 +39,26 @@ class TreeNode:
     @left.setter
     def left(self, new_left):
         """ Sets the value of this node's left child pointer """
-        self._left = new_left
+        if isinstance(new_left, TreeNode) or new_left is None:
+            self._left = new_left
+        else:
+            raise TypeError("The{0}.left must also be an instance of {0}".format(TreeNode))
 
     @right.setter
     def right(self, new_right):
         """ Sets the value of this node's right child pointer """
-        self._right = new_right
+        if isinstance(new_right, TreeNode) or new_right is None:
+            self._right = new_right
+        else:
+            raise TypeError("The{0}.right must also be an instance of {0}".format(TreeNode))
 
     @parent.setter
     def parent(self, new_parent):
         """Sets the value of this node's parent pointer"""
-        self._parent = new_parent
-
-    def is_left(self):
-        """ Returns true if the node is the left child of its parent"""
-        if self.parent:
-            if self.parent.left:
-                return (self.value == self.parent.left.value)
-        return False
-
-    def is_right(self):
-        """ Returns true if the node is the right child of its parent"""
-        if self.parent:
-            if self.parent.right:
-                return (self.value == self.parent.right.value)
-        return False
+        if isinstance(new_parent, TreeNode) or new_parent is None:
+            self._parent = new_parent
+        else:
+            raise TypeError("The{0}.left must also be an instance of {0}".format(TreeNode))
 
     def __str__(self):
         """ Returns the value of this node as a string """
@@ -120,8 +119,6 @@ class BSTree:
         if self.root is None:
             self.root = TreeNode(new_val)
         else:
-            if type(self.root.value) != type(new_val):
-                raise TypeError("You can only insert objects of type " + str(type(self.root.value)) + " into this BST.")
             self._insert(self.root, new_val)
 
     def _insert(self, current, new_val):
@@ -177,7 +174,7 @@ class BSTree:
         if og_root is self.root:    # if our original root of the rotation is the tree root, replace tree root with new root
             self.root = new_root
         else:
-            if og_root.is_left():
+            if og_root is og_root.parent.left:
                 og_root.parent.left = new_root
             else:
                 og_root.parent.right = new_root
@@ -196,7 +193,7 @@ class BSTree:
         if og_root.value == self.root.value: # og_root is tree root
             self.root = new_root
         else:
-            if og_root.is_right():
+            if og_root is og_root.parent.right:
                 og_root.parent.right = new_root
             else:
                 og_root.parent.left = new_root
@@ -299,10 +296,10 @@ class BSTree:
     def __repr__(self):
         '''From James Collins'''
         em_dash = '\u2014'
-        max_depth = min(5, self.height() - 1)  # replaced height with balance in node so changing this to tree height
+        max_depth = min(5, self.height())  # replaced height with balance in node so changing this to tree height
         value_width = 3  # Must be odd.
         node_width = value_width + 2  # Add space for parentheses
-        print_width = (node_width + 1) * 2 ** (max_depth - 1) - 1
+        print_width = (node_width + 1) * 2 ** (max_depth-1) - 1
         center = print_width // 2 + 1
         level = [self.root]
         blank_char = ' '
