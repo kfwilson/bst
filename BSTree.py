@@ -3,6 +3,31 @@
 from Tree import TreeNode
 from Tree import Tree
 
+"""Base binary tree class"""
+from typing import Iterable
+from node import Node
+
+class BSTreeNode(TreeNode):
+    """A node for use in binary search trees.
+
+    Attributes
+    ----------
+    value : Any
+        The data this node holds.
+    """
+
+    def __init__(self, val):
+        super().__init__(val)
+        self.height = 0
+
+    def __repr__(self):
+        """ Official string rep of this node"""
+        node_rep = "BSTreeNode(value = {}".format(self.value)
+        node_rep += ", left=BSTreeNode({})".format(self.left.value) if self.left else "left=None"
+        node_rep += ", right=BSTreeNode({})".format(self.right.value) if self.right else "right=None"
+        node_rep += ", height={})".format(self.height)
+        return node_rep
+
 class BSTree(Tree):
     """ A binary search tree """
     def __init__(self, values=()):
@@ -15,7 +40,7 @@ class BSTree(Tree):
     def insert(self, new_val):
         """ Wrapper for insertNode that initiates the insertion by calling insertNode on root"""
         if self.root is None:
-            self.root = TreeNode(new_val)
+            self.root = BSTreeNode(new_val)
         else:
             self._insert(self.root, new_val)
 
@@ -25,13 +50,23 @@ class BSTree(Tree):
             if current.left:
                 self._insert(current.left, new_val)
             else:
-                current.left = TreeNode(new_val)
+                current.left = BSTreeNode(new_val)
         else:
             if current.right:
                 self._insert(current.right, new_val)
             else:
-                current.right = TreeNode(new_val)
+                current.right = BSTreeNode(new_val)
         current.height = self._height(current)
+
+    def _print_level(self, node, level, height):
+        if level < height:
+            if node is None:
+                print('\t' * level + "None")
+            else:
+                level_str = "{}({})".format(node.value, node.height)
+                print('\t' * level + level_str)
+                self._print_level(node._left, level+1, height)
+                self._print_level(node._right, level+1, height)
 
 def main():
     s = input("Enter a list of numbers to build your own tree (Enter to use default list): ")

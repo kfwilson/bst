@@ -15,8 +15,8 @@ class RBTreeNode(TreeNode):
     ----------
     val : Any
         The data this node holds.
-    red : True, False
-        Whether this node is red or black
+    color: RED, BLACK, NIL
+        The color of this node: red, black, or nil (sentinel leaf node)
     """
 
     def __init__(self, val, color = RED, parent = None):
@@ -34,26 +34,18 @@ class RBTreeNode(TreeNode):
     @parent.setter
     def parent(self, new_parent):
         """Sets the value of this node's parent pointer"""
-        if isinstance(new_parent, AVLTreeNode) or new_parent is None:
+        if isinstance(new_parent, RBTreeNode) or new_parent is None:
             self._parent = new_parent
         else:
-            raise TypeError("The{0}.parent must also be an instance of {0}".format(AVLTreeNode))
-
-    def __str__(self):
-        """ Returns the value of this node as a string """
-        node_str = str(self.value)
-        if self._left:
-            node_str += ", L: " + str(self._left.value)
-        if self._right:
-            node_str += ", R: " + str(self._right.value)
-        return node_str+", BF = "+str(self.balance)
+            raise TypeError("The{0}.parent must also be an instance of {0}".format(RBTreeNode))
 
     def __repr__(self):
         """ Official string rep of this node"""
-        return ("AVLTreeNode(" + str(self.value) +
-                ", P: " + self._str_node(self.parent) +
-                ", (L: " + self._str_node(self.left) + ", R: " + self._str_node(self.right) +
-                "), BF: " + str(self.balance)+")")
+        node_rep = "{} RBTreeNode(value = {}".format(self.color, self.value)
+        node_rep += ", left=RBTreeNode({})".format(self.left.value) if self.left else "left=None"
+        node_rep += ", right=RBTreeNode({})".format(self.right.value) if self.right else "right=None"
+        node_rep += ", parent=RBTreeNode({}))".format(self.parent.value) if self.parent else "parent=None)"
+        return node_rep
 
     def _str_node(self, node):
         if node:

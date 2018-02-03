@@ -13,9 +13,8 @@ class TreeNode(Node):
 
     def __init__(self, val):
         if not hasattr(val, '__le__'):
-            raise AttributeError('AVLTreeNode values must be comparable.')
+            raise AttributeError('TreeNode values must be comparable.')
         super().__init__(val)
-        self.height = 0
         self._left = None
         self._right = None
 
@@ -45,29 +44,12 @@ class TreeNode(Node):
         else:
             raise TypeError("The{0}.right must also be an instance of {0}".format(TreeNode))
 
-    def __str__(self):
-        """ Returns the value of this node as a string """
-        node_str = str(self.value)
-        if self._left:
-            node_str += ", L: " + str(self._left.value)
-        if self._right:
-            node_str += ", R: " + str(self._right.value)
-        return node_str+", H = "+str(self.height)
-
     def __repr__(self):
         """ Official string rep of this node"""
-        node_str = "TreeNode(" + str(self.value) + ", L: "
-        if self.left:
-            node_str += self.left.value
-        else:
-            node_str += "None"
-        node_str += ", R: "
-        if self._right:
-            node_str += self.right.value
-        else:
-            node_str += "None"
-        return (node_str+", H: " + str(self.height)+")")
-
+        node_rep = "TreeNode(value = {}".format(self.value)
+        node_rep += ", left=TreeNode({})".format(self.left.value) if self.left else "left=None"
+        node_rep += ", right=TreeNode({}))".format(self.right.value) if self.right else "right=None)"
+        return node_rep
 
 class Tree:
     def __init__(self, values=()):
@@ -163,7 +145,8 @@ class Tree:
             if node is None:
                 print('\t' * level + "None")
             else:
-                print('\t' * level + str(node.value) + "(" + str(node.height)+")")
+                level_str = "{}".format(node.value)
+                print('\t' * level + level_str)
                 self._print_level(node._left, level+1, height)
                 self._print_level(node._right, level+1, height)
 

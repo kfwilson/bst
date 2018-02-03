@@ -14,8 +14,6 @@ class AVLTreeNode(TreeNode):
     """
 
     def __init__(self, val, parent = None):
-        if not hasattr(val, '__le__'):
-            raise AttributeError('AVLTreeNode values must be comparable.')
         super().__init__(val)
         self.balance = 0 # difference between heights of left and right subtrees (h(left) - h(right))
         self._parent = parent
@@ -33,27 +31,14 @@ class AVLTreeNode(TreeNode):
         else:
             raise TypeError("The{0}.parent must also be an instance of {0}".format(AVLTreeNode))
 
-    def __str__(self):
-        """ Returns the value of this node as a string """
-        node_str = str(self.value)
-        if self._left:
-            node_str += ", L: " + str(self._left.value)
-        if self._right:
-            node_str += ", R: " + str(self._right.value)
-        return node_str+", BF = "+str(self.balance)
-
     def __repr__(self):
         """ Official string rep of this node"""
-        return ("AVLTreeNode(" + str(self.value) +
-                ", P: " + self._str_node(self.parent) +
-                ", (L: " + self._str_node(self.left) + ", R: " + self._str_node(self.right) +
-                "), BF: " + str(self.balance)+")")
-
-    def _str_node(self, node):
-        if node:
-            return str(node.value)
-        else:
-            return "None"
+        node_rep = "AVLTreeNode(value = {}".format(self.value)
+        node_rep += ", left=AVLTreeNode({})".format(self.left.value) if self.left else "left=None"
+        node_rep += ", right=AVLTreeNode({})".format(self.right.value) if self.right else "right=None"
+        node_rep += ", parent=AVLTreeNode({})".format(self.parent.value) if self.parent else "parent=None"
+        node_rep += ", balance={})".format(self.balance)
+        return node_rep
 
 # move internal recursive functions that don't depend on external data outside as functions
 class AVLTree(Tree):
@@ -158,6 +143,16 @@ class AVLTree(Tree):
         if not current:
             return 0
         return (self._height(current.left)-self._height(current.right))
+
+    def _print_level(self, node, level, height):
+        if level < height:
+            if node is None:
+                print('\t' * level + "None")
+            else:
+                level_str = "{}({})".format(node.value, node.balance)
+                print('\t' * level + level_str)
+                self._print_level(node._left, level+1, height)
+                self._print_level(node._right, level+1, height)
 
 def main():
     s = input("Enter a list of numbers to build your own tree (Enter to use default list): ")
