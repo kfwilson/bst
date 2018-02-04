@@ -74,7 +74,7 @@ cmake-build-debug/
 
 # *.iml
 # modules.xml
-# .idea/misc.xml
+.idea/misc.xml
 # *.ipr
 
 # Sonarlint plugin
@@ -83,7 +83,7 @@ cmake-build-debug/
 # Byte-compiled / optimized / DLL files
 *.py[cod]
 *$py.class
-
+/.idea
 # C extensions
 *.so
 

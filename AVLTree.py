@@ -88,13 +88,13 @@ class AVLTree(Tree):
     def rebalance(self, current):
         """ Rebalance a node that is unbalanced by a series of rotations"""
         if current.balance < -1: # current node right heavy
-            if current.right.balance > 0: # right child left heavy
+            if (current.right is not None) & (current.right.balance > 0): # right child left heavy
                 self.rotate_right(current.right)
                 self.rotate_left(current)
             else: # right child is left heavy or balanced
                 self.rotate_left(current)
         elif current.balance > 1: # current node left heavy
-            if current.left.balance < 0: # left child right heavy
+            if (current.left is not None) & (current.left.balance < 0): # left child right heavy
                 self.rotate_left(current.left)
                 self.rotate_right(current)
             else:
@@ -116,7 +116,7 @@ class AVLTree(Tree):
                 og_root.parent.right = new_root
         new_root.left = og_root
         og_root.parent = new_root
-        og_root.balance = new_root.balance + 1 - min(new_root.balance, 0)
+        og_root.balance = og_root.balance + 1 - min(new_root.balance, 0)
         new_root.balance = new_root.balance + 1 + max(og_root.balance, 0)
 
     def rotate_right(self, og_root):
@@ -135,7 +135,7 @@ class AVLTree(Tree):
                 og_root.parent.left = new_root
         new_root.right = og_root
         og_root.parent = new_root
-        og_root.balance = og_root.balance + 1 + max(new_root.balance, 0)
+        og_root.balance = og_root.balance - 1 - max(new_root.balance, 0)
         new_root.balance = new_root.balance - 1 + min(0, og_root.balance)
 
     def _balance(self, current):
