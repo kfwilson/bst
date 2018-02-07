@@ -59,8 +59,8 @@ class AVLTree(Tree):
                 self._update_balance(current.right)
 
     def _update_balance(self, current):
-        """ Check the balance of the current node and rebalance if necessary. call update_balance on parent recursively"""
-        if abs(current.balance) > 1: # if node is unbalanced
+        """ Travels up the tree recursively checking and updating the balance. when reaches critical unbalanced point, rebalances tree and stops"""
+        if abs(current.balance) > 1: # reached unbalanced point
             self.rebalance(current)
             return
         if current.parent:
@@ -71,8 +71,17 @@ class AVLTree(Tree):
             if current.parent.balance != 0: # continue updating and rebalancing up tree
                 self._update_balance(current.parent)
 
+    def _update_balance_delete(self, current):
+        if current is None:
+            return
+        current.balance = self._height(current.left) - self._height(current.right)
+        if abs(current.balance) > 1:
+            self.rebalance(current)
+        self._update_balance_delete(current.parent)
+
+
     def rebalance(self, current):
-        """ Rebalance a node that is unbalanced by a series of rotations"""
+        """ Rebalance a node that is unbalanced via a series of rotations"""
         if current.balance < -1: # current node right heavy
             if current.right.balance > 0: # right child left heavy
                 self.rotate_right(current.right)

@@ -16,7 +16,7 @@ class BSTreeNode(TreeNode):
         The data this node holds.
     """
 
-    def __init__(self, val, parent = None):
+    def __init__(self, val, parent=None):
         super().__init__(val, parent)
         self.height = 1
 
@@ -51,12 +51,12 @@ class BSTree(Tree):
             if current.left:
                 self._insert(current.left, new_val)
             else:
-                current.left = BSTreeNode(new_val, parent = current)
+                current.left = BSTreeNode(new_val, parent=current)
         else:
             if current.right:
                 self._insert(current.right, new_val)
             else:
-                current.right = BSTreeNode(new_val, parent = current)
+                current.right = BSTreeNode(new_val, parent=current)
         current.height = self._height(current)
 
     def delete(self, del_val):
@@ -66,13 +66,13 @@ class BSTree(Tree):
 
     def _delete(self, del_node):
         """ Removes the passed del_node from the tree, relinking around the removed node"""
-        if del_node is None:
+        if not del_node:
             return
-        if (del_node.left is None) & (del_node.right is None):
+        if (not del_node.left) & (not del_node.right):
             self._replace(del_node, None)
-        elif (del_node.left is not None) & (del_node.right is None):
+        elif (del_node.left is not None) & (not del_node.right):
             self._replace(del_node, del_node.left)
-        elif (del_node.left is None) & (del_node.right is not None):
+        elif (not del_node.left) & (del_node.right is not None):
             self._replace(del_node, del_node.right)
         else: # we have 2 children so replace del_node with predecessor (since dupes stored to left)
             pre_node = self._find_max(del_node.left)
@@ -85,12 +85,12 @@ class BSTree(Tree):
             return current
         return self._find_max(current.right)
 
-    def _updateHeights(self, current):
+    def _update_heights(self, current):
         """Travels up tree from current node to root, correcting the height at each node it stops at"""
         if current is None:
             return
         current.height = self._height(current)
-        self._updateHeights(current.parent)
+        self._update_heights(current.parent)
 
     def _replace(self, replacee_node, replacer_node):
         if replacee_node is self.root:
@@ -104,7 +104,7 @@ class BSTree(Tree):
                 replacee_node.parent.right = replacer_node
             if replacer_node is not None:
                 replacer_node.parent = replacee_node.parent
-            self._updateHeights(replacee_node.parent) # update the heights back up the path to the root
+            self._update_heights(replacee_node.parent) # update the heights back up the path to the root
 
     def _print_level(self, node, level, height):
         if level < height:
