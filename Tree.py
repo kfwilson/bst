@@ -17,6 +17,7 @@ class TreeNode(Node):
         super().__init__(val)
         self._left = None
         self._right = None
+        self._parent = None
 
     @property
     def left(self):
@@ -44,11 +45,26 @@ class TreeNode(Node):
         else:
             raise TypeError("The{0}.right must also be an instance of {0}".format(TreeNode))
 
+    @property
+    def parent(self):
+        """ A reference to the parent node, if one exists"""
+        return self._parent
+
+    @parent.setter
+    def parent(self, new_parent):
+        """Sets the value of this node's parent pointer"""
+        if isinstance(new_parent, TreeNode) or new_parent is None:
+            self._parent = new_parent
+        else:
+            raise TypeError("The{0}.parent must also be an instance of {0}".format(TreeNode))
+
+
     def __repr__(self):
         """ Official string rep of this node"""
         node_rep = "TreeNode(value = {}".format(self.value)
-        node_rep += ", left=TreeNode({})".format(self.left.value) if self.left else "left=None"
-        node_rep += ", right=TreeNode({}))".format(self.right.value) if self.right else "right=None)"
+        node_rep += ", left=TreeNode({})".format(self.left.value) if self.left else ", left=None"
+        node_rep += ", right=TreeNode({})".format(self.right.value) if self.right else ", right=None"
+        node_rep += ", parent=TreeNode({}))".formate(self.parent.value) if self.parent else ", parent=None)"
         return node_rep
 
 class Tree:
@@ -66,14 +82,14 @@ class Tree:
 
     def find(self, search_val):
         """ Wrapper for findNode that initiates the search by calling findNode starting at the root """
-        return self._find(self.root, search_val)
+        return self._find(self.root, search_val) is not None
 
     def _find(self, current, search_val):
         """ Searches the BST for the passed search_val returning true if value found, false otherwise"""
         if current is None:
-            return False
+            return None
         elif search_val == current.value:
-            return True
+            return current
         elif search_val <= current.value:
             return self._find(current.left, search_val)
         return self._find(current.right, search_val)

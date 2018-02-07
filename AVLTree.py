@@ -16,27 +16,13 @@ class AVLTreeNode(TreeNode):
     def __init__(self, val, parent = None):
         super().__init__(val)
         self.balance = 0 # difference between heights of left and right subtrees (h(left) - h(right))
-        self._parent = parent
-
-    @property
-    def parent(self):
-        """ A reference to the parent node, if one exists"""
-        return self._parent
-
-    @parent.setter
-    def parent(self, new_parent):
-        """Sets the value of this node's parent pointer"""
-        if isinstance(new_parent, AVLTreeNode) or new_parent is None:
-            self._parent = new_parent
-        else:
-            raise TypeError("The{0}.parent must also be an instance of {0}".format(AVLTreeNode))
 
     def __repr__(self):
         """ Official string rep of this node"""
         node_rep = "AVLTreeNode(value = {}".format(self.value)
-        node_rep += ", left=AVLTreeNode({})".format(self.left.value) if self.left else "left=None"
-        node_rep += ", right=AVLTreeNode({})".format(self.right.value) if self.right else "right=None"
-        node_rep += ", parent=AVLTreeNode({})".format(self.parent.value) if self.parent else "parent=None"
+        node_rep += ", left=AVLTreeNode({})".format(self.left.value) if self.left else ", left=None"
+        node_rep += ", right=AVLTreeNode({})".format(self.right.value) if self.right else ", right=None"
+        node_rep += ", parent=AVLTreeNode({})".format(self.parent.value) if self.parent else ", parent=None"
         node_rep += ", balance={})".format(self.balance)
         return node_rep
 
@@ -88,13 +74,13 @@ class AVLTree(Tree):
     def rebalance(self, current):
         """ Rebalance a node that is unbalanced by a series of rotations"""
         if current.balance < -1: # current node right heavy
-            if (current.right is not None) & (current.right.balance > 0): # right child left heavy
+            if current.right.balance > 0: # right child left heavy
                 self.rotate_right(current.right)
                 self.rotate_left(current)
             else: # right child is left heavy or balanced
                 self.rotate_left(current)
         elif current.balance > 1: # current node left heavy
-            if (current.left is not None) & (current.left.balance < 0): # left child right heavy
+            if current.left.balance < 0: # left child right heavy
                 self.rotate_left(current.left)
                 self.rotate_right(current)
             else:
