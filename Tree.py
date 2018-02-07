@@ -11,13 +11,13 @@ class TreeNode(Node):
         The data this node holds.
     """
 
-    def __init__(self, val):
+    def __init__(self, val, parent = None):
         if not hasattr(val, '__le__'):
             raise AttributeError('TreeNode values must be comparable.')
         super().__init__(val)
         self._left = None
         self._right = None
-        self._parent = None
+        self._parent = parent
 
     @property
     def left(self):

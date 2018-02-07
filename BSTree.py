@@ -16,16 +16,16 @@ class BSTreeNode(TreeNode):
         The data this node holds.
     """
 
-    def __init__(self, val):
-        super().__init__(val)
-        self.height = 0
+    def __init__(self, val, parent = None):
+        super().__init__(val, parent)
+        self.height = 1
 
     def __repr__(self):
         """ Official string rep of this node"""
         node_rep = "BSTreeNode(value = {}".format(self.value)
         node_rep += ", left=BSTreeNode({})".format(self.left.value) if self.left else ", left=None"
         node_rep += ", right=BSTreeNode({})".format(self.right.value) if self.right else ", right=None"
-        node_rep += ", parent=BSTreeNode({})".formate(self.parent.value) if self.parent else ", parent=None"
+        node_rep += ", parent=BSTreeNode({})".format(self.parent.value) if self.parent else ", parent=None"
         node_rep += ", height={})".format(self.height)
         return node_rep
 
@@ -51,40 +51,60 @@ class BSTree(Tree):
             if current.left:
                 self._insert(current.left, new_val)
             else:
-                current.left = BSTreeNode(new_val)
+                current.left = BSTreeNode(new_val, parent = current)
         else:
             if current.right:
                 self._insert(current.right, new_val)
             else:
-                current.right = BSTreeNode(new_val)
+                current.right = BSTreeNode(new_val, parent = current)
         current.height = self._height(current)
 
     def delete(self, del_val):
+        """Calls find to access the node to be deleted, passing it to _delete to do the actual removal"""
         del_node = self._find(self.root, del_val)
-        self._delete(self.root, del_node)
+        self._delete(del_node)
 
     def _delete(self, del_node):
+        """ Removes the passed del_node from the tree, relinking around the removed node"""
         if del_node is None:
             return
-        if del_node.left is None & del_node.right is None:
-            if del_node is self.root:
-                self.root = None
-                return
+        if (del_node.left is None) & (del_node.right is None):
             self._replace(del_node, None)
-        elif del_node.left is not None & del_node.right is None:
-            if del_node is self.root:
-                self.root = del_node.left
-                self.root.parent = None
-            else:
-                self._replace(del_node, del_node.left)
+        elif (del_node.left is not None) & (del_node.right is None):
+            self._replace(del_node, del_node.left)
+        elif (del_node.left is None) & (del_node.right is not None):
+            self._replace(del_node, del_node.right)
+        else: # we have 2 children so replace del_node with predecessor (since dupes stored to left)
+            pre_node = self._find_max(del_node.left)
+            del_node.value = pre_node.value
+            self._delete(pre_node)
+
+    def _find_max(self, current):
+        """ Returns the node storing the greatest value in the subtree rooted at current """
+        if current.right is None:
+            return current
+        return self._find_max(current.right)
+
+    def _updateHeights(self, current):
+        """Travels up tree from current node to root, correcting the height at each node it stops at"""
+        if current is None:
+            return
+        current.height = self._height(current)
+        self._updateHeights(current.parent)
 
     def _replace(self, replacee_node, replacer_node):
-        if replacee_node.parent:
+        if replacee_node is self.root:
+            self.root = replacer_node
+            if self.root:
+                self.root.parent = None
+        else: #any non-root node has a parent
             if replacee_node is replacee_node.parent.left:
                 replacee_node.parent.left = replacer_node
             else:
                 replacee_node.parent.right = replacer_node
-
+            if replacer_node is not None:
+                replacer_node.parent = replacee_node.parent
+            self._updateHeights(replacee_node.parent) # update the heights back up the path to the root
 
     def _print_level(self, node, level, height):
         if level < height:
@@ -110,6 +130,10 @@ def main():
     print(tree.root)
     print("12 is in tree? {}".format(tree.find(12)))
     print("100 is in tree? {}".format(tree.find(100)))
+    tree.delete(10)
+    print(tree)
+    tree.print_tree()
+    print(tree.root)
     print("Height: " + str(tree.height()))
     print("In-order: " + str(tree.to_list('in_order')))
     print("Pre-order: " + str(tree.to_list('pre_order')))
