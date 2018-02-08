@@ -13,8 +13,8 @@ class AVLTreeNode(TreeNode):
         The data this node holds.
     """
 
-    def __init__(self, val, parent = None):
-        super().__init__(val)
+    def __init__(self, val, parent=None):
+        super().__init__(val, parent)
         self.balance = 0 # difference between heights of left and right subtrees (h(left) - h(right))
 
     def __repr__(self):
@@ -49,16 +49,16 @@ class AVLTree(Tree):
             if current.left:
                 self._insert(current.left, new_val)
             else:
-                current.left = AVLTreeNode(new_val, parent = current)
-                self._update_balance(current.left)
+                current.left = AVLTreeNode(new_val, parent=current)
+                self._update_critical_balance(current.left)
         else:
             if current.right:
                 self._insert(current.right, new_val)
             else:
-                current.right = AVLTreeNode(new_val, parent = current)
-                self._update_balance(current.right)
+                current.right = AVLTreeNode(new_val, parent=current)
+                self._update_critical_balance(current.right)
 
-    def _update_balance(self, current):
+    def _update_critical_balance(self, current):
         """ Travels up the tree recursively checking and updating the balance. when reaches critical unbalanced point, rebalances tree and stops"""
         if abs(current.balance) > 1: # reached unbalanced point
             self.rebalance(current)
@@ -69,16 +69,57 @@ class AVLTree(Tree):
             elif current is current.parent.right: # if current is right child
                 current.parent.balance -= 1
             if current.parent.balance != 0: # continue updating and rebalancing up tree
-                self._update_balance(current.parent)
+                self._update_critical_balance(current.parent)
 
-    def _update_balance_delete(self, current):
+    def delete(self, del_val):
+        """Calls find to access the node to be deleted, passing it to _delete to do the actual removal"""
+        del_node = self._find(self.root, del_val)
+        print(del_node)
+        self._delete(del_node)
+
+    def _delete(self, del_node):
+        """ Removes the passed del_node from the tree, relinking around the removed node"""
+        if not del_node:
+            return
+        if (not del_node.left) & (not del_node.right):
+            self._replace(del_node, None)
+        elif (del_node.left is not None) & (not del_node.right):
+            self._replace(del_node, del_node.left)
+        elif (not del_node.left) & (del_node.right is not None):
+            self._replace(del_node, del_node.right)
+        else: # we have 2 children so replace del_node with predecessor (since dupes stored to left)
+            pre_node = self._find_max(del_node.left)
+            del_node.value = pre_node.value
+            self._delete(pre_node)
+
+    def _find_max(self, current):
+        """ Returns the node storing the greatest value in the subtree rooted at current """
+        if current.right is None:
+            return current
+        return self._find_max(current.right)
+
+    def _replace(self, replacee_node, replacer_node):
+        """ replaces recplacee_node with replacer_node, relinking around the now removed replacee_node. calls update path to trace back up teh tree, rebalancing"""
+        if replacee_node is self.root:
+            self.root = replacer_node
+            if self.root:
+                self.root.parent = None
+        else: #any non-root node has a parent
+            if replacee_node is replacee_node.parent.left:
+                replacee_node.parent.left = replacer_node
+            else:
+                replacee_node.parent.right = replacer_node
+            if replacer_node is not None:
+                replacer_node.parent = replacee_node.parent
+            self._update_path(replacee_node.parent) # update the balances back up the path to the root, rebalancing as you go
+
+    def _update_path(self, current):
         if current is None:
             return
         current.balance = self._height(current.left) - self._height(current.right)
         if abs(current.balance) > 1:
             self.rebalance(current)
-        self._update_balance_delete(current.parent)
-
+        self._update_path(current.parent)
 
     def rebalance(self, current):
         """ Rebalance a node that is unbalanced via a series of rotations"""
@@ -149,6 +190,10 @@ class AVLTree(Tree):
                 self._print_level(node._left, level+1, height)
                 self._print_level(node._right, level+1, height)
 
+def sort(value_list):
+    tree = AVLTree(value_list)
+    return tree.to_list('in_order')
+
 def main():
     s = input("Enter a list of numbers to build your own tree (Enter to use default list): ")
     if not s:
@@ -167,6 +212,14 @@ def main():
     print("Pre-order: " + str(tree.to_list('pre_order')))
     print("Post-order: " + str(tree.to_list('post_order')))
     print("Breadth first (level-order): " + str(tree.to_list('level_order')))
+    print()
+    print()
+    tree.delete(7)
+    tree.delete(8)
+    tree.delete(4)
+    tree.print_tree()
+    print(tree)
+    print(sort(lst))
 
 if __name__ == "__main__":
     main()

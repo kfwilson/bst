@@ -85,12 +85,12 @@ class BSTree(Tree):
             return current
         return self._find_max(current.right)
 
-    def _update_heights(self, current):
+    def _update_path(self, current):
         """Travels up tree from current node to root, correcting the height at each node it stops at"""
         if current is None:
             return
         current.height = self._height(current)
-        self._update_heights(current.parent)
+        self._update_path(current.parent)
 
     def _replace(self, replacee_node, replacer_node):
         if replacee_node is self.root:
@@ -104,7 +104,7 @@ class BSTree(Tree):
                 replacee_node.parent.right = replacer_node
             if replacer_node is not None:
                 replacer_node.parent = replacee_node.parent
-            self._update_heights(replacee_node.parent) # update the heights back up the path to the root
+            self._update_path(replacee_node.parent) # update the heights back up the path to the root
 
     def _print_level(self, node, level, height):
         if level < height:
