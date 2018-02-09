@@ -57,7 +57,7 @@ class RBTreeNode(TreeNode):
 
     def has_children(self):
         """ Returns true if node has at least one non NIL child, False otherwise"""
-        return ((self.left != NIL) & int(self.right != NIL))
+        return ((self.left != NIL) & (self.right != NIL))
 
     def __repr__(self):
         """ Official string rep of this node"""
@@ -73,7 +73,6 @@ class RBTreeNode(TreeNode):
         else:
             return "None"
 
-# move internal recursive functions that don't depend on external data outside as functions
 class RBTree(Tree):
     """ A binary search tree """
     def __init__(self, values=()):
