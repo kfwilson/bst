@@ -7,21 +7,6 @@ from Tree import Tree
 RED = 'RED'
 BLACK = 'BLACK'
 
-class SentinelNode():
-    def __init__(self):
-        self.color = BLACK
-
-    def __eq__(self, other):
-        """All sentinel nodes are equal to each other"""
-        return isinstance(other, SentinelNode)
-
-    def __ne__(self, other):
-        """Sentinel nodes are ONLY equal to other SentinelNodes"""
-        return not isinstance(other, SentinelNode)
-
-"""NIL is the sentinel leaf of tree"""
-NIL = SentinelNode()
-
 class RBTreeNode(TreeNode):
     """A node for use in binary search trees.
 
@@ -37,8 +22,6 @@ class RBTreeNode(TreeNode):
         if color not in (RED, BLACK):
             raise AttributeError("RBTreeNodes must be colored RED or BLACK")
         super().__init__(val)
-        self._left = NIL
-        self._right = NIL
         self.color = color
         self._parent = parent
 
@@ -55,35 +38,24 @@ class RBTreeNode(TreeNode):
         else:
             raise TypeError("The{0}.parent must also be an instance of {0}".format(RBTreeNode))
 
-    def has_children(self):
-        """ Returns true if node has at least one non NIL child, False otherwise"""
-        return ((self.left != NIL) & (self.right != NIL))
-
     def __repr__(self):
         """ Official string rep of this node"""
         node_rep = "{} RBTreeNode(value = {}".format(self.color, self.value)
-        node_rep += ", left=RBTreeNode({})".format(self.left.value) if self.left != NIL else ", left=NIL"
-        node_rep += ", right=RBTreeNode({})".format(self.right.value) if self.right != NIL else ", right=NIL"
-        node_rep += ", parent=RBTreeNode({}))".format(self.parent.value) if self.parent else "parent=None)"
+        node_rep += ", left=RBTreeNode({})".format(self.left.value) if self.left  else ", left=NONE"
+        node_rep += ", right=RBTreeNode({})".format(self.right.value) if self.right else ", right=NONE"
+        node_rep += ", parent=RBTreeNode({}))".format(self.parent.value) if self.parent else ", parent=None)"
         return node_rep
-
-    def _str_node(self, node):
-        if node:
-            return str(node.value)
-        else:
-            return "None"
 
     def get_sibling(self):
         """ Returns the sibling node (left child of parent if self is right child,
         right child of parent if self is left). Returns None only if self is root of tree"""
-        if self.parent is None:
+        if (not self) or (self.parent is None):
             return None
         else:
             if self is self.parent.left:
                 return self.parent.right
             else:
                 return self.parent.left
-
 
 class RBTree(Tree):
     """ A binary search tree """
@@ -93,12 +65,10 @@ class RBTree(Tree):
             ALLOWS DUPLICATES (simple implementation that always stores duplicates to the right)
         """
         super().__init__(values)
-        if self.root is None:
-            self.root = NIL
 
     def insert(self, new_val):
         """ Wrapper for _insert that initiates the insertion by calling _insert on root"""
-        if self.root == NIL:
+        if self.root is None:
             self.root = RBTreeNode(new_val, color=BLACK)  # root has to be black
         else:
             self._insert(self.root, new_val)
@@ -106,13 +76,13 @@ class RBTree(Tree):
     def _insert(self, current, new_val):
         """ Inserts a red node storing the new_value into the BST"""
         if new_val <= current.value:
-            if current.left != NIL:
+            if current.left:
                 self._insert(current.left, new_val)
             else:
                 current.left = RBTreeNode(new_val, parent=current)  # new nodes are red by default
                 self._fix_rb_prop(current.left)
         else:
-            if current.right != NIL:
+            if current.right:
                 self._insert(current.right, new_val)
             else:
                 current.right = RBTreeNode(new_val, parent=current)  # new nodes are red by default
@@ -121,12 +91,13 @@ class RBTree(Tree):
     def _fix_rb_prop(self, current):
         """Fixes the rb properties of the tree after an insert of current node"""
         p_node = current.parent
-        if p_node.color == BLACK:
+        print(current)
+        if (not p_node) or (p_node.color == BLACK):
             return  # if the parent of the current node (newly inserted) is black, no properties are violated
         gp_node = p_node.parent # grandparent of the newly inserted node (p_node will always have a parent because it's red so not root)
         # otherwise, we're in a double red situation
         sib_node = p_node.get_sibling()
-        if sib_node.color == BLACK:  # sibling is black or NIL (have to have a sibling because current can't be root)
+        if (not sib_node) or (sib_node.color == BLACK):  # sibling is black or None (have to have a sibling because current can't be root)
             if p_node is gp_node.left:
                 if current is p_node.left:  # rotate p node right and recolor it black, color gp node red
                     self._rotate_right(gp_node)
@@ -145,9 +116,9 @@ class RBTree(Tree):
         else: # sibling is red
             p_node.color = BLACK
             sib_node.color = BLACK
-            if (gp_node.parent != None):  # as long as gp isn't the root, change color to red
+            if (gp_node.parent):  # as long as gp isn't the root, change color to red
                 gp_node.color = RED
-        self._fix_rb_prop(gp_node) # recolor might have created double-red between gp & gp's parent so recursively fix
+        self._fix_rb_prop(gp_node)  # recolor might have created double-red between gp & gp's parent so recursively fix
 
     def _rotate_left(self, og_root):
         """ Rotate the subtree with root og_root to the left so that right subtree of og_root replaces og_root"""
@@ -185,22 +156,129 @@ class RBTree(Tree):
 
     def _print_level(self, node, level, height):
         if level < height:
-            if node==NIL:
-                print('\t' * level + "NIL")
+            if node is None:
+                print('\t' * level + "NONE")
             else:
                 level_str = "{}({})".format(node.value, node.color)
                 print('\t' * level + level_str)
                 self._print_level(node._left, level + 1, height)
                 self._print_level(node._right, level + 1, height)
 
+    def __repr__(self):
+        '''From James Collins'''
+        em_dash = '\u2014'
+        max_depth = min(5, self.height())
+        value_width = 3  # Must be odd.
+        node_width = value_width + 2  # Add space for parentheses
+        print_width = (node_width + 1) * 2 ** (max_depth - 1) - 1
+        center = print_width // 2 + 1
+        level = [self.root]
+        blank_char = ' '
+        out = ""
+        for i in range(max_depth):
+            next_level = []
+            for n in level:
+                if n:
+                    next_level.extend([n.left, n.right])
+                else:
+                    next_level.extend([None, None])
+            end_width = center // 2 ** i - (node_width // 2 + 1)
+            end_space = blank_char * end_width
+            interstitial_width = (print_width - 2 * end_width - node_width * len(level)) // (len(level) - 1) if len(
+                level) > 1 else 0
+            interstitial_space = blank_char * interstitial_width
+            out += end_space
+            node_strs = []
+            for node in level:
+                if node:
+                    node_str = f'({node.value: ^3})' if node.color is RED else f'[{node.value: ^3}]'
+                else:
+                    node_str = blank_char * node_width
+                node_strs.append(node_str)
+            out += interstitial_space.join(node_strs)
+            out += end_space + '\n'
+
+            out += end_space
+            for n in level:
+                if n:
+                    if n.left:
+                        out += blank_char * (node_width // 2 - 1) + '/' + blank_char
+                    else:
+                        out += blank_char * (node_width // 2 + 1)
+                    if n.right:
+                        out += '\\' + blank_char * (node_width // 2 - 1)
+                    else:
+                        out += blank_char * (node_width // 2)
+                else:
+                    out += blank_char * node_width
+                out += interstitial_space
+            out = out[:-interstitial_width] if interstitial_width else out
+            out += end_space + '\n'
+
+            if i == max_depth - 1:
+                break
+
+            next_end_width = center // 2 ** (i + 1) - (node_width // 2 + 1)
+            dash_end_width = next_end_width + node_width // 2 + 1
+            next_interstitial_width = (print_width - 2 * next_end_width - node_width * len(next_level)) // (
+                        len(next_level) - 1)
+            dash_width = (next_interstitial_width + 2 * (node_width // 2) - 3) // 2
+            dash_interstitial_width = interstitial_width - 2 * (dash_width - node_width // 2 + 1)
+            out += blank_char * dash_end_width
+            for n in level:
+                if n:
+                    if n.left:
+                        out += em_dash * dash_width + blank_char * 3
+                    else:
+                        out += blank_char * (3 + dash_width)
+                    if n.right:
+                        out += em_dash * dash_width
+                    else:
+                        out += blank_char * dash_width
+                    out += blank_char * dash_interstitial_width
+                else:
+                    out += blank_char * (2 * dash_width + 3 + dash_interstitial_width)
+            out = out[:-dash_interstitial_width] if interstitial_width else out
+            out += blank_char * dash_end_width + '\n'
+
+            out += blank_char * (next_end_width + node_width // 2)
+            for n in level:
+                if n:
+                    out += '/' if n.left else blank_char
+                    out += blank_char * (next_interstitial_width + 2 * (node_width // 2))
+                    out += '\\' if n.right else blank_char
+                    out += blank_char * (next_interstitial_width + 2 * (node_width // 2))
+                else:
+                    out += blank_char * 2 * (next_interstitial_width + 2 * (node_width // 2) + 1)
+            out = out[:-(next_interstitial_width + 2 * (node_width // 2))]
+            out += blank_char * (next_end_width + node_width // 2) + '\n'
+
+            level = next_level
+
+        return out[:-1]
+
 def main():
-    # s = input("Enter a list of numbers to build your own tree (Enter to use default list): ")
-    # if not s:
-    #     lst = [10, 4, 15, 7, 12, 20, 6, 8, 18, 30]
-    #     print("Using default list: " + str(lst))
-    # else:
-    #     lst = [int(x) for x in s.split()]
-    # tree = BSTree(lst)
+    s = input("Enter a list of numbers to build your own tree (Enter to use default list): ")
+    if not s:
+        lst = [10, 4, 15, 7, 12, 20, 6, 8, 18, 30]
+        print("Using default list: " + str(lst))
+    else:
+        lst = [int(x) for x in s.split()]
+    tree = RBTree(lst)
+    tree.print_tree()
+    print()
+    print(tree)
+    print()
+    print()
+    s = input("Enter a value to insert into the tree: ")
+    while (s):
+        tree.insert(int(s))
+        tree.print_tree()
+        print()
+        print(tree)
+        print()
+        print()
+        s = input("Enter a value to insert into the tree: ")
     # #tree.insert("test string")
     # tree.print_tree()
     # print(tree)
@@ -213,9 +291,7 @@ def main():
     # print("Post-order: " + str(tree.to_list('post_order')))
     # print("Breadth first (level-order): " + str(tree.to_list('level_order')))
 
-    node_a = RBTreeNode(5)
-    node_b = RBTreeNode(3)
-    print("Minimum: {}".format(min(node_a, node_b)))
+
 
 if __name__ == "__main__":
     main()
